@@ -1,6 +1,7 @@
 ﻿
 open System.IO
 
+/// Implementation of https://github.com/ssloy/tinyraycaster/wiki/Part-1:-crude-3D-renderings#step-1-save-an-image-to-disk
 let ``Save an image to disk`` () =
     let fileName = "./out.ppm"
 
@@ -15,11 +16,9 @@ let ``Save an image to disk`` () =
     // bytes, in order rgb
     [1..width*height] 
     |> List.collect (fun i ->
-        let row = float (i / width)
-        let col = float (i % width)
-        let red = byte ((255.*row)/float height)
-        let green = byte ((255.*col)/float width)
-        [red;green;0uy])
+        let red = (255.*float (i / width))/float height
+        let green = (255.*float (i % width))/float width
+        [byte red;byte green;0uy])
     |> Seq.iter out.WriteByte
 
 [<EntryPoint>]
