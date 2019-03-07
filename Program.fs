@@ -1,29 +1,32 @@
 ﻿
 open System.IO
 
-/// Implementation of https://github.com/ssloy/tinyraycaster/wiki/Part-1:-crude-3D-renderings#step-1-save-an-image-to-disk
-let ``Save an image to disk`` () =
-    let fileName = "./out.ppm"
+let gradient array =
+    let width, height = Array2D.length1 array, Array2D.length2 array
+    for y = 0 to height - 1 do
+        for x = 0 to width - 1 do
+            let red = (255.*float y)/float height
+            let green = (255.*float x)/float width
+            array.[x, y] <- (byte red, byte green, 0uy)
 
+let dropPPM fileName array =
     if File.Exists fileName then File.Delete fileName
     use out = File.OpenWrite fileName
+    let width, height = Array2D.length1 array, Array2D.length2 array
 
-    let width, height = 512, 512
-    // ppm header
     sprintf "P6\n%i %i\n255\n" width height 
     |> Seq.iter (fun c -> out.WriteByte (byte c))
 
-    // bytes, in order rgb
-    [1..width*height] 
-    |> List.collect (fun i ->
-        let red = (255.*float (i / width))/float height
-        let green = (255.*float (i % width))/float width
-        [byte red;byte green;0uy])
-    |> Seq.iter out.WriteByte
+    for y = 0 to height - 1 do
+        for x = 0 to width - 1 do
+            let (r, g, b) = array.[x, y]
+            Seq.iter out.WriteByte [r;g;b]
 
 [<EntryPoint>]
 let main _ =
     
-    ``Save an image to disk`` ()
+    let map = Array2D.create 512 512 (0uy, 0uy, 0uy)
+    gradient map
+    dropPPM "./out2.ppm" map
 
     0
