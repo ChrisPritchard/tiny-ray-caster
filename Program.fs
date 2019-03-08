@@ -62,11 +62,11 @@ let rayCast px py pa array =
     ||> List.fold (fun stopped c ->
         if stopped then stopped
         else
-            let cx = int (px + c * cos pa)
-            let cy = int (py + c * sin pa)
-            if mapArray.[cy].[cx] <> ' ' then true
+            let cx =  px + c * cos pa
+            let cy = py + c * sin pa
+            if mapArray.[int cy].[int cx] <> ' ' then true
             else
-                Array2D.set array (cx * tw) (cy * th) white
+                Array2D.set array (int (cx * float tw)) (int (cy * float th)) white
                 false) |> ignore
     array
 
