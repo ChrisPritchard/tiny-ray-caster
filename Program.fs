@@ -1,6 +1,8 @@
 ﻿
 open System.IO
 open SDL
+open System
+open System.Runtime.InteropServices
 
 let map = 
     [|
@@ -27,10 +29,10 @@ let mapw, maph = map.GetLength(0), map.GetLength(1)
 let tilew, tileh = 32, 32
 
 let white = (255uy, 255uy, 255uy)
-let random = System.Random 0
+let random = Random 0
 let randomByte () = random.Next (0, 255) |> byte
 let walls = [|0..3|] |> Array.map (fun _ -> (randomByte (), randomByte (), randomByte ()))
-let fov = System.Math.PI/3.
+let fov = Math.PI/3.
 
 let drawRect x y w h v array =
     for dx = x to x + w - 1 do
@@ -90,14 +92,34 @@ let saveAsPPM fileName array =
 [<EntryPoint>]
 let main _ =
 
-    let mutable win, rnd = 0, 0
-    let res = SDL_CreateWindowAndRenderer(200, 100, SDL_WindowFlags.SDL_WINDOW_SHOWN, &win, &rnd)
+    let mutable window, renderer = 0, 0
+    SDL_CreateWindowAndRenderer(arrayw, arrayh, SDL_WindowFlags.SDL_WINDOW_SHOWN, &window, &renderer) |> ignore
+    let mutable texture = SDL_CreateTexture(&renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
     
+    let frameBuffer = Array2D.create arrayw arrayh white
+    let pos = Marshal.UnsafeAddrOfPinnedArrayElement (frameBuffer, 0)
+    let ptr = IntPtr (pos.ToPointer ())
+
+    let rec drawLoop px py pa =
+        frameBuffer
+        |> drawMap
+        |> drawPlayer px py
+        |> drawView px py pa
+        |> ignore
+
+        SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
+        SDL_RenderClear(&renderer) |> ignore
+        SDL_RenderCopy(&renderer, texture, IntPtr.Zero, IntPtr.Zero) |> ignore
+        SDL_RenderPresent(&renderer) |> ignore
+
+        drawLoop px py pa
+
     let px, py, pa = 3.456, 2.345, 3.
-    Array2D.create arrayw arrayh white
-    |> drawMap
-    |> drawPlayer px py
-    |> drawView px py pa
-    |> saveAsPPM "./out.ppm"
+    drawLoop px py pa
+
+    SDL_DestroyTexture(texture)
+    SDL_DestroyRenderer(&renderer)
+    SDL_DestroyWindow(&window)
+    SDL_Quit()
 
     0
