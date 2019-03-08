@@ -21,6 +21,8 @@ let map = """
 """
 let mapArray = map.Trim([|'\r';'\n'|]).Split("\r\n")
 let mapw, maph = mapArray.[0].Length, mapArray.Length
+let white = (255uy, 255uy, 255uy)
+let wall = (0uy, 255uy, 255uy)
 
 let mapDim array = Array2D.length1 array, Array2D.length2 array
 let tileDim array = 
@@ -36,22 +38,36 @@ let gradient array =
             array.[x, y] <- (byte red, byte green, 0uy)
     array
 
-let drawRect x y w h v (array: 'a[,]) =
+let drawRect x y w h v array =
     for x = x to x + w - 1 do
         for y = y to y + h - 1 do
-            array.[x, y] <- v
+            Array2D.set array x y v
 
 let drawMap array =
     let tw, th = tileDim array
     for y = 0 to maph - 1 do
         for x = 0 to mapw - 1 do
             if mapArray.[y].[x] <> ' ' then
-                drawRect (x * tw) (y * th) tw th (0uy, 255uy, 255uy) array
+                drawRect (x * tw) (y * th) tw th wall array
     array
 
 let drawPlayer px py array =
     let tw, th = tileDim array
-    drawRect (int (px * float tw)) (int (py * float th)) 5 5 (255uy, 255uy, 255uy) array
+    drawRect (int (px * float tw)) (int (py * float th)) 5 5 white array
+    array
+
+let rayCast px py pa array =
+    let tw, th = tileDim array
+    (false, [0.0..0.5..19.0])
+    ||> List.fold (fun stopped c ->
+        if stopped then stopped
+        else
+            let cx = int (px + c * cos pa)
+            let cy = int (py + c * sin pa)
+            if mapArray.[cy].[cx] <> ' ' then true
+            else
+                Array2D.set array (cx * tw) (cy * th) white
+                false) |> ignore
     array
 
 let dropPPM fileName array =
@@ -70,12 +86,12 @@ let dropPPM fileName array =
 [<EntryPoint>]
 let main _ =
     
-    let px, py = 3.456, 2.345
-
+    let px, py, pa = 3.456, 2.345, 1.523
     Array2D.create 512 512 (0uy, 0uy, 0uy)
     |> gradient
     |> drawMap
     |> drawPlayer px py
+    |> rayCast px py pa
     |> dropPPM "./out.ppm"
 
     0
