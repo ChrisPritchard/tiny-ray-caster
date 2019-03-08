@@ -11,3 +11,6 @@ Also, given that Dmitry's work is just 486 lines of C++, I was interested to see
 Cool things I learned:
 
 - the netbpm format (https://en.wikipedia.org/wiki/Netpbm_format)
+  - to open ppm files, I had to install **gimp** on windows.
+  - on linux/osx, it might be easier to install & use **display** in the terminal
+  - ppm is an uncompressed image format, so is not generally recommended for images (which is probably why the support is so poor, plus its almost 40 years old)
