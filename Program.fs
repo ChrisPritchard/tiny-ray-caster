@@ -68,7 +68,8 @@ let drawView px py pa array =
         match drawRay px py angle array with
         | None -> ()
         | Some (stopPoint, wallType) ->
-            let columnHeight = int (float arrayh / stopPoint)
+            let viewPlaneDist = stopPoint * cos (angle - pa) // I understand what this does, and why. But not how (not a math guy :)
+            let columnHeight = int (float arrayh / viewPlaneDist)
             drawRect (arrayw / 2 + i) ((arrayh - columnHeight) / 2) 1 columnHeight walls.[wallType] array)
     array
 
@@ -88,13 +89,11 @@ let saveAsPPM fileName array =
 [<EntryPoint>]
 let main _ =
     
-    let px, py, pa = 3.456, 2.345, 1.523
-    [0..359] |> List.iter (fun i ->
-        let pa = pa + float i*System.Math.PI/360.
-        Array2D.create arrayw arrayh white
-        |> drawMap
-        |> drawPlayer px py
-        |> drawView px py pa
-        |> saveAsPPM (sprintf "./out_%03i.ppm" i))
+    let px, py, pa = 3.456, 2.345, 3.
+    Array2D.create arrayw arrayh white
+    |> drawMap
+    |> drawPlayer px py
+    |> drawView px py pa
+    |> saveAsPPM "./out.ppm"
 
     0
