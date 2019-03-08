@@ -26,7 +26,9 @@ let mapw, maph = mapArray.[0].Length, mapArray.Length
 let tilew, tileh = 32, 32
 
 let white = (255uy, 255uy, 255uy)
-let wall = (0uy, 255uy, 255uy)
+let random = System.Random 0
+let randomByte () = random.Next (0, 255) |> byte
+let walls = [|0..3|] |> Array.map (fun _ -> (randomByte (), randomByte (), randomByte ()))
 let fov = System.Math.PI/3.
 
 let drawRect x y w h v array =
@@ -38,7 +40,8 @@ let drawMap array =
     for y = 0 to maph - 1 do
         for x = 0 to mapw - 1 do
             if mapArray.[y].[x] <> ' ' then
-                drawRect (x * tilew) (y * tileh) tilew tileh wall array
+                let wallType = int mapArray.[y].[x] - int '0'
+                drawRect (x * tilew) (y * tileh) tilew tileh walls.[wallType] array
     array
 
 let drawPlayer px py array =
@@ -53,7 +56,7 @@ let drawRay px py pa array =
         | None ->
             let cx =  px + c * cos pa
             let cy = py + c * sin pa
-            if mapArray.[int cy].[int cx] <> ' ' then Some c
+            if mapArray.[int cy].[int cx] <> ' ' then Some (c, int mapArray.[int cy].[int cx] - int '0')
             else
                 let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
                 Array2D.set array pixelx pixely (0uy, 0uy, 0uy)
@@ -64,9 +67,9 @@ let drawView px py pa array =
         let angle = pa-fov/2. + fov*float i/float (arrayw/2)
         match drawRay px py angle array with
         | None -> ()
-        | Some stopPoint ->
+        | Some (stopPoint, wallType) ->
             let columnHeight = int (float arrayh / stopPoint)
-            drawRect (arrayw / 2 + i) ((arrayh - columnHeight) / 2) 1 columnHeight wall array)
+            drawRect (arrayw / 2 + i) ((arrayh - columnHeight) / 2) 1 columnHeight walls.[wallType] array)
     array
 
 let saveAsPPM fileName array =
