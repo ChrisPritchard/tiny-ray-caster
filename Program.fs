@@ -20,22 +20,14 @@ let map = """
 0002222222200000
 """
 
-let arrayw, arrayh = 512, 512
+let arrayw, arrayh = 1024, 512
 let mapArray = map.Trim([|'\r';'\n'|]).Split("\r\n")
 let mapw, maph = mapArray.[0].Length, mapArray.Length
-let tilew, tileh = arrayw / mapw, arrayh / maph
+let tilew, tileh = 32, 32
 
 let white = (255uy, 255uy, 255uy)
 let wall = (0uy, 255uy, 255uy)
 let fov = System.Math.PI/3.
-
-let fillGradient array =
-    for y = 0 to arrayh - 1 do
-        for x = 0 to arrayw - 1 do
-            let red = (255.*float y)/float arrayh
-            let green = (255.*float x)/float arrayw
-            Array2D.set array x y (byte red, byte green, 0uy)
-    array
 
 let drawRect x y w h v array =
     for x = x to x + w - 1 do
@@ -63,7 +55,7 @@ let drawRay px py pa array =
             if mapArray.[int cy].[int cx] <> ' ' then true
             else
                 let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
-                Array2D.set array pixelx pixely white
+                Array2D.set array pixelx pixely (0uy, 0uy, 0uy)
                 false) |> ignore
     array
 
@@ -90,8 +82,7 @@ let saveAsPPM fileName array =
 let main _ =
     
     let px, py, pa = 3.456, 2.345, 1.523
-    Array2D.create arrayw arrayh (0uy, 0uy, 0uy)
-    |> fillGradient
+    Array2D.create arrayw arrayh white
     |> drawMap
     |> drawPlayer px py
     |> drawView px py pa
