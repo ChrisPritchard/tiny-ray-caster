@@ -20,7 +20,7 @@ let map =
         "0 0000000      0"
         "0              0"
         "0002222222200000"
-    |] |> fun a -> Array2D.init a.[0].Length a.Length (fun x y -> a.[y].[x])
+    |] |> array2D
 
 let arrayw, arrayh = 1024, 512
 let mapw, maph = map.GetLength(0), map.GetLength(1)
