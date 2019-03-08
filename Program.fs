@@ -1,6 +1,6 @@
 ﻿
 open System.IO
-open System.Runtime.InteropServices
+open SDL
 
 let map = 
     [|
@@ -87,19 +87,11 @@ let saveAsPPM fileName array =
             let (r, g, b) = array.[x, y]
             Seq.iter out.WriteByte [r;g;b]
 
-type SDL_WindowFlags =
-| SDL_WINDOW_FULLSCREEN = 0x00000001
-| SDL_WINDOW_OPENGL = 0x00000002
-| SDL_WINDOW_SHOWN = 0x00000004
-
-[<DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)>]
-extern int SDL_CreateWindowAndRenderer (int, int, SDL_WindowFlags, nativeint, nativeint)
-
 [<EntryPoint>]
 let main _ =
 
-    let mutable win, rnd = nativeint 0, nativeint 0
-    let res = SDL_CreateWindowAndRenderer(200, 100, SDL_WindowFlags.SDL_WINDOW_SHOWN, win, rnd)
+    let mutable win, rnd = 0, 0
+    let res = SDL_CreateWindowAndRenderer(200, 100, SDL_WindowFlags.SDL_WINDOW_SHOWN, &win, &rnd)
     
     let px, py, pa = 3.456, 2.345, 3.
     Array2D.create arrayw arrayh white
