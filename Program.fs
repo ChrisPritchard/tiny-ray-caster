@@ -89,10 +89,12 @@ let saveAsPPM fileName array =
 let main _ =
     
     let px, py, pa = 3.456, 2.345, 1.523
-    Array2D.create arrayw arrayh white
-    |> drawMap
-    |> drawPlayer px py
-    |> drawView px py pa
-    |> saveAsPPM "./out.ppm"
+    [0..359] |> List.iter (fun i ->
+        let pa = pa + float i*System.Math.PI/360.
+        Array2D.create arrayw arrayh white
+        |> drawMap
+        |> drawPlayer px py
+        |> drawView px py pa
+        |> saveAsPPM (sprintf "./out_%03i.ppm" i))
 
     0
