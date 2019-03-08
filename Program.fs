@@ -29,7 +29,7 @@ let tileDim array =
     let width, height = mapDim array
     width / mapw, height / maph
 
-let gradient array =
+let fillGradient array =
     let width, height = mapDim array
     for y = 0 to height - 1 do
         for x = 0 to width - 1 do
@@ -56,7 +56,7 @@ let drawPlayer px py array =
     drawRect (int (px * float tw)) (int (py * float th)) 5 5 white array
     array
 
-let rayCast px py pa array =
+let drawRay px py pa array =
     let tw, th = tileDim array
     (false, [0.0..0.5..19.0])
     ||> List.fold (fun stopped c ->
@@ -66,11 +66,12 @@ let rayCast px py pa array =
             let cy = py + c * sin pa
             if mapArray.[int cy].[int cx] <> ' ' then true
             else
-                Array2D.set array (int (cx * float tw)) (int (cy * float th)) white
+                let pixelx, pixely = int (cx * float tw), int (cy * float th)
+                Array2D.set array pixelx pixely white
                 false) |> ignore
     array
 
-let dropPPM fileName array =
+let saveAsPPM fileName array =
     if File.Exists fileName then File.Delete fileName
     use out = File.OpenWrite fileName
     let width, height = Array2D.length1 array, Array2D.length2 array
@@ -88,10 +89,10 @@ let main _ =
     
     let px, py, pa = 3.456, 2.345, 1.523
     Array2D.create 512 512 (0uy, 0uy, 0uy)
-    |> gradient
+    |> fillGradient
     |> drawMap
     |> drawPlayer px py
-    |> rayCast px py pa
-    |> dropPPM "./out.ppm"
+    |> drawRay px py pa
+    |> saveAsPPM "./out.ppm"
 
     0
