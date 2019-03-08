@@ -30,9 +30,9 @@ let wall = (0uy, 255uy, 255uy)
 let fov = System.Math.PI/3.
 
 let drawRect x y w h v array =
-    for x = x to x + w - 1 do
-        for y = y to y + h - 1 do
-            Array2D.set array x y v
+    for dx = x to x + w - 1 do
+        for dy = y to y + h - 1 do
+            Array2D.set array dx dy v
 
 let drawMap array =
     for y = 0 to maph - 1 do
@@ -46,23 +46,27 @@ let drawPlayer px py array =
     array
 
 let drawRay px py pa array =
-    (false, [0.0..0.1..19.0])
-    ||> List.fold (fun stopped c ->
-        if stopped then stopped
-        else
+    (None, [0.0..0.1..19.0])
+    ||> List.fold (fun stopPoint c ->
+        match stopPoint with
+        | Some _ -> stopPoint
+        | None ->
             let cx =  px + c * cos pa
             let cy = py + c * sin pa
-            if mapArray.[int cy].[int cx] <> ' ' then true
+            if mapArray.[int cy].[int cx] <> ' ' then Some c
             else
                 let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
                 Array2D.set array pixelx pixely (0uy, 0uy, 0uy)
-                false) |> ignore
-    array
+                None)
 
 let drawView px py pa array =
-    [0..arrayw-1] |> List.iter (fun i ->
-        let angle = pa-fov/2. + fov*float i/float arrayw
-        drawRay px py angle array |> ignore)
+    [0..(arrayw/2)-1] |> List.iter (fun i ->
+        let angle = pa-fov/2. + fov*float i/float (arrayw/2)
+        match drawRay px py angle array with
+        | None -> ()
+        | Some stopPoint ->
+            let columnHeight = int (float arrayh / stopPoint)
+            drawRect (arrayw / 2 + i) ((arrayh - columnHeight) / 2) 1 columnHeight wall array)
     array
 
 let saveAsPPM fileName array =
