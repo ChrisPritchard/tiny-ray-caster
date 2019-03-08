@@ -19,23 +19,22 @@ let map = """
 0              0
 0002222222200000
 """
+
+let arrayw, arrayh = 512, 512
 let mapArray = map.Trim([|'\r';'\n'|]).Split("\r\n")
 let mapw, maph = mapArray.[0].Length, mapArray.Length
+let tilew, tileh = arrayw / mapw, arrayh / maph
+
 let white = (255uy, 255uy, 255uy)
 let wall = (0uy, 255uy, 255uy)
-
-let mapDim array = Array2D.length1 array, Array2D.length2 array
-let tileDim array = 
-    let width, height = mapDim array
-    width / mapw, height / maph
+let fov = System.Math.PI/3.
 
 let fillGradient array =
-    let width, height = mapDim array
-    for y = 0 to height - 1 do
-        for x = 0 to width - 1 do
-            let red = (255.*float y)/float height
-            let green = (255.*float x)/float width
-            array.[x, y] <- (byte red, byte green, 0uy)
+    for y = 0 to arrayh - 1 do
+        for x = 0 to arrayw - 1 do
+            let red = (255.*float y)/float arrayh
+            let green = (255.*float x)/float arrayw
+            Array2D.set array x y (byte red, byte green, 0uy)
     array
 
 let drawRect x y w h v array =
@@ -44,21 +43,18 @@ let drawRect x y w h v array =
             Array2D.set array x y v
 
 let drawMap array =
-    let tw, th = tileDim array
     for y = 0 to maph - 1 do
         for x = 0 to mapw - 1 do
             if mapArray.[y].[x] <> ' ' then
-                drawRect (x * tw) (y * th) tw th wall array
+                drawRect (x * tilew) (y * tileh) tilew tileh wall array
     array
 
 let drawPlayer px py array =
-    let tw, th = tileDim array
-    drawRect (int (px * float tw)) (int (py * float th)) 5 5 white array
+    drawRect (int (px * float tilew)) (int (py * float tileh)) 5 5 white array
     array
 
 let drawRay px py pa array =
-    let tw, th = tileDim array
-    (false, [0.0..0.5..19.0])
+    (false, [0.0..0.1..19.0])
     ||> List.fold (fun stopped c ->
         if stopped then stopped
         else
@@ -66,9 +62,15 @@ let drawRay px py pa array =
             let cy = py + c * sin pa
             if mapArray.[int cy].[int cx] <> ' ' then true
             else
-                let pixelx, pixely = int (cx * float tw), int (cy * float th)
+                let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
                 Array2D.set array pixelx pixely white
                 false) |> ignore
+    array
+
+let drawView px py pa array =
+    [0..arrayw-1] |> List.iter (fun i ->
+        let angle = pa-fov/2. + fov*float i/float arrayw
+        drawRay px py angle array |> ignore)
     array
 
 let saveAsPPM fileName array =
@@ -88,11 +90,11 @@ let saveAsPPM fileName array =
 let main _ =
     
     let px, py, pa = 3.456, 2.345, 1.523
-    Array2D.create 512 512 (0uy, 0uy, 0uy)
+    Array2D.create arrayw arrayh (0uy, 0uy, 0uy)
     |> fillGradient
     |> drawMap
     |> drawPlayer px py
-    |> drawRay px py pa
+    |> drawView px py pa
     |> saveAsPPM "./out.ppm"
 
     0
