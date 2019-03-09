@@ -53,13 +53,15 @@ let drawPlayer px py array =
     array
 
 let drawRay px py pa array =
+    let cpa = cos pa
+    let spa = sin pa
     (None, [0.0..0.1..19.0])
     ||> List.fold (fun stopPoint c ->
         match stopPoint with
         | Some _ -> stopPoint
         | None ->
-            let cx =  px + c * cos pa
-            let cy = py + c * sin pa
+            let cx =  px + c * cpa
+            let cy = py + c * spa
             if map.[int cx, int cy] <> ' ' then Some (c, int map.[int cx, int cy] - int '0')
             else
                 let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
@@ -67,8 +69,9 @@ let drawRay px py pa array =
                 None)
 
 let drawView px py pa array =
+    let da = fov / (float arrayw/2.)
     [0..(arrayw/2)-1] |> List.iter (fun i ->
-        let angle = pa-fov/2. + fov*float i/float (arrayw/2)
+        let angle = pa-(fov/2.) + (da*float i)
         match drawRay px py angle array with
         | None -> ()
         | Some (stopPoint, wallType) ->
@@ -98,13 +101,12 @@ let main _ =
     SDL_SetRenderDrawColor(renderer, 255uy, 0uy, 255uy, 255uy) |> ignore
     let mutable texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
 
-    let map = Array2D.create arrayw arrayh white
     let frameBuffer = Array.create (arrayw * arrayh * 4) 255uy
-    
     let pos = Marshal.UnsafeAddrOfPinnedArrayElement (frameBuffer, 0)
     let ptr = IntPtr (pos.ToPointer ())
 
     let rec drawLoop px py pa =
+        let map = Array2D.create arrayw arrayh white
         map
         |> drawMap
         |> drawPlayer px py
@@ -125,9 +127,9 @@ let main _ =
         SDL_RenderCopy(renderer, texture, IntPtr.Zero, IntPtr.Zero) |> ignore
         SDL_RenderPresent(renderer) |> ignore
 
-        drawLoop px py (pa + Math.PI/360.)
+        drawLoop px py (pa + (Math.PI/360.))
 
-    let px, py, pa = 3.456, 2.345, 3.
+    let px, py, pa = 3.456, 2.345, 15.
     drawLoop px py pa
 
     SDL_DestroyTexture(texture)
