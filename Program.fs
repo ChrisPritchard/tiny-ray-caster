@@ -28,10 +28,11 @@ let arrayw, arrayh = 1024, 512
 let mapw, maph = map.GetLength(0), map.GetLength(1)
 let tilew, tileh = 32, 32
 
-let white = (255uy, 255uy, 255uy)
+let white = (255uy, 255uy, 255uy, 255uy)
+let black = (0uy, 0uy, 0uy, 255uy)
 let random = Random 0
 let randomByte () = random.Next (0, 255) |> byte
-let walls = [|0..3|] |> Array.map (fun _ -> (randomByte (), randomByte (), randomByte ()))
+let walls = [|0..3|] |> Array.map (fun _ -> (randomByte (), randomByte (), randomByte (), 255uy))
 let fov = Math.PI/3.
 
 let drawRect x y w h v array =
@@ -62,7 +63,7 @@ let drawRay px py pa array =
             if map.[int cx, int cy] <> ' ' then Some (c, int map.[int cx, int cy] - int '0')
             else
                 let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
-                Array2D.set array pixelx pixely (0uy, 0uy, 0uy)
+                Array2D.set array pixelx pixely black
                 None)
 
 let drawView px py pa array =
@@ -86,8 +87,8 @@ let saveAsPPM fileName array =
 
     for y = 0 to height - 1 do
         for x = 0 to width - 1 do
-            let (r, g, b) = array.[x, y]
-            Seq.iter out.WriteByte [r;g;b]
+            let (r, g, b, a) = array.[x, y]
+            Seq.iter out.WriteByte [r;g;b;a]
 
 [<EntryPoint>]
 let main _ =
