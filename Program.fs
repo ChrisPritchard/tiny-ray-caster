@@ -98,7 +98,7 @@ let main _ =
     let mutable texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
     
     let map = Array2D.create arrayw arrayh white
-    let frameBuffer = Array.create (arrayw * arrayh * 4) 0uy
+    let frameBuffer = Array.create (arrayw * arrayh * 4) 255uy
     
     let pos = Marshal.UnsafeAddrOfPinnedArrayElement (frameBuffer, 0)
     let ptr = IntPtr (pos.ToPointer ())
@@ -110,14 +110,14 @@ let main _ =
         |> drawView px py pa
         |> ignore
 
-        for y = 0 to arrayh - 1 do
-            for x = 0 to arrayw - 1 do
-                let pos = ((y * arrayw) + x) * 4
-                let (a, g, b, r) = map.[x, y]
-                frameBuffer.[pos] <- a
-                frameBuffer.[pos+1] <- b
-                frameBuffer.[pos+2] <- g
-                frameBuffer.[pos+3] <- r
+        //for y = 0 to arrayh - 1 do
+        //    for x = 0 to arrayw - 1 do
+        //        let pos = ((y * arrayw) + x) * 4
+        //        let (a, g, b, r) = map.[x, y]
+        //        frameBuffer.[pos] <- a
+        //        frameBuffer.[pos+1] <- b
+        //        frameBuffer.[pos+2] <- g
+        //        frameBuffer.[pos+3] <- r
 
         SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore
