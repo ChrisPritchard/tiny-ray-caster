@@ -28,31 +28,31 @@ let SDL_PIXELFORMAT_ABGR8888 =
     uint32 ((1 <<< 28) ||| ((SDL_PIXELTYPE_PACKED32) <<< 24) ||| ((SDL_PACKEDORDER_ABGR) <<< 20) ||| ((SDL_PACKEDLAYOUT_8888) <<< 16) ||| (32 <<< 8) ||| (6))
     
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern int SDL_CreateWindowAndRenderer (int width, int height, SDL_WindowFlags flags, int& window, int& renderer)
+extern int SDL_CreateWindowAndRenderer (int width, int height, SDL_WindowFlags flags, IntPtr& window, IntPtr& renderer)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern IntPtr SDL_CreateTexture (int& renderer, uint32 format, int access, int width, int height)
+extern IntPtr SDL_CreateTexture (IntPtr renderer, uint32 format, int access, int width, int height)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern int SDL_UpdateTexture(IntPtr texture, IntPtr rect, IntPtr pixels, int pitch);
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern int SDL_RenderClear(int& renderer);
+extern int SDL_RenderClear(IntPtr renderer);
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern int SDL_RenderCopy(int& renderer, IntPtr texture, IntPtr srcrect, IntPtr destrect);
+extern int SDL_RenderCopy(IntPtr renderer, IntPtr texture, IntPtr srcrect, IntPtr destrect);
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern unit SDL_RenderPresent(int& renderer);
+extern unit SDL_RenderPresent(IntPtr renderer);
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern unit SDL_DestroyTexture(IntPtr texture);
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern unit SDL_DestroyRenderer(int& renderer)
+extern unit SDL_DestroyRenderer(IntPtr renderer)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern unit SDL_DestroyWindow(int& window)
+extern unit SDL_DestroyWindow(IntPtr window)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern unit SDL_Quit()

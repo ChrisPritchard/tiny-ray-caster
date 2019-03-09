@@ -92,9 +92,9 @@ let saveAsPPM fileName array =
 [<EntryPoint>]
 let main _ =
 
-    let mutable window, renderer = 0, 0
+    let mutable window, renderer = IntPtr.Zero, IntPtr.Zero
     SDL_CreateWindowAndRenderer(arrayw, arrayh, SDL_WindowFlags.SDL_WINDOW_SHOWN, &window, &renderer) |> ignore
-    let mutable texture = SDL_CreateTexture(&renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
+    let mutable texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
     
     let frameBuffer = Array2D.create arrayw arrayh white
     let pos = Marshal.UnsafeAddrOfPinnedArrayElement (frameBuffer, 0)
@@ -108,9 +108,9 @@ let main _ =
         |> ignore
 
         SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
-        SDL_RenderClear(&renderer) |> ignore
-        SDL_RenderCopy(&renderer, texture, IntPtr.Zero, IntPtr.Zero) |> ignore
-        SDL_RenderPresent(&renderer) |> ignore
+        SDL_RenderClear(renderer) |> ignore
+        SDL_RenderCopy(renderer, texture, IntPtr.Zero, IntPtr.Zero) |> ignore
+        SDL_RenderPresent(renderer) |> ignore
 
         drawLoop px py pa
 
@@ -118,8 +118,8 @@ let main _ =
     drawLoop px py pa
 
     SDL_DestroyTexture(texture)
-    SDL_DestroyRenderer(&renderer)
-    SDL_DestroyWindow(&window)
+    SDL_DestroyRenderer(renderer)
+    SDL_DestroyWindow(window)
     SDL_Quit()
 
     0
