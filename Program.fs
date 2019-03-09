@@ -95,8 +95,9 @@ let main _ =
 
     let mutable window, renderer = IntPtr.Zero, IntPtr.Zero
     SDL_CreateWindowAndRenderer(arrayw, arrayh, SDL_WindowFlags.SDL_WINDOW_SHOWN, &window, &renderer) |> ignore
+    SDL_SetRenderDrawColor(renderer, 255uy, 0uy, 255uy, 255uy) |> ignore
     let mutable texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
-    
+
     let map = Array2D.create arrayw arrayh white
     let frameBuffer = Array.create (arrayw * arrayh * 4) 255uy
     
@@ -110,21 +111,21 @@ let main _ =
         |> drawView px py pa
         |> ignore
 
-        //for y = 0 to arrayh - 1 do
-        //    for x = 0 to arrayw - 1 do
-        //        let pos = ((y * arrayw) + x) * 4
-        //        let (a, g, b, r) = map.[x, y]
-        //        frameBuffer.[pos] <- a
-        //        frameBuffer.[pos+1] <- b
-        //        frameBuffer.[pos+2] <- g
-        //        frameBuffer.[pos+3] <- r
+        for y = 0 to arrayh - 1 do
+            for x = 0 to arrayw - 1 do
+                let pos = ((y * arrayw) + x) * 4
+                let (a, g, b, r) = map.[x, y]
+                frameBuffer.[pos] <- a
+                frameBuffer.[pos+1] <- b
+                frameBuffer.[pos+2] <- g
+                frameBuffer.[pos+3] <- r
 
         SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore
         SDL_RenderCopy(renderer, texture, IntPtr.Zero, IntPtr.Zero) |> ignore
         SDL_RenderPresent(renderer) |> ignore
 
-        drawLoop px py pa
+        drawLoop px py (pa + Math.PI/360.)
 
     let px, py, pa = 3.456, 2.345, 3.
     drawLoop px py pa
