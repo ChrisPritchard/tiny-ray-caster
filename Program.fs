@@ -29,10 +29,10 @@ let mapw, maph = map.GetLength(0), map.GetLength(1)
 let tilew, tileh = 32, 32
 
 let white = (255uy, 255uy, 255uy, 255uy)
-let black = (0uy, 0uy, 0uy, 255uy)
+let black = (255uy, 0uy, 0uy, 0uy)
 let random = Random 0
 let randomByte () = random.Next (0, 255) |> byte
-let walls = [|0..3|] |> Array.map (fun _ -> (randomByte (), randomByte (), randomByte (), 255uy))
+let walls = [|0..3|] |> Array.map (fun _ -> (255uy, randomByte (), randomByte (), randomByte ()))
 let fov = Math.PI/3.
 
 let drawRect x y w h v array =
@@ -88,7 +88,7 @@ let saveAsPPM fileName array =
     for y = 0 to height - 1 do
         for x = 0 to width - 1 do
             let (r, g, b, a) = array.[x, y]
-            Seq.iter out.WriteByte [r;g;b;a]
+            Seq.iter out.WriteByte [a;b;g;r]
 
 [<EntryPoint>]
 let main _ =
@@ -97,16 +97,27 @@ let main _ =
     SDL_CreateWindowAndRenderer(arrayw, arrayh, SDL_WindowFlags.SDL_WINDOW_SHOWN, &window, &renderer) |> ignore
     let mutable texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
     
-    let frameBuffer = Array2D.create arrayw arrayh white
+    let map = Array2D.create arrayw arrayh white
+    let frameBuffer = Array.create (arrayw * arrayh * 4) 0uy
+    
     let pos = Marshal.UnsafeAddrOfPinnedArrayElement (frameBuffer, 0)
     let ptr = IntPtr (pos.ToPointer ())
 
     let rec drawLoop px py pa =
-        frameBuffer
+        map
         |> drawMap
         |> drawPlayer px py
         |> drawView px py pa
         |> ignore
+
+        for y = 0 to arrayh - 1 do
+            for x = 0 to arrayw - 1 do
+                let pos = ((y * arrayw) + x) * 4
+                let (a, g, b, r) = map.[x, y]
+                frameBuffer.[pos] <- a
+                frameBuffer.[pos+1] <- b
+                frameBuffer.[pos+2] <- g
+                frameBuffer.[pos+3] <- r
 
         SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore
