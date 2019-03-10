@@ -98,8 +98,15 @@ let main _ =
     let mutable keyEvent = Unchecked.defaultof<SDL_KeyboardEvent>
 
     let wallRows = wallRows ()
+    let mutable lastTicks = SDL_GetTicks ()
 
     let rec drawLoop px py pa =
+        let ticks = SDL_GetTicks ()
+        let fps = 1000u / (ticks - lastTicks)
+        Console.CursorLeft <- 0
+        Console.Write (string fps + "      ")
+        lastTicks <- ticks
+
         drawMap wallRows frameBuffer
         drawView px py pa wallRows frameBuffer
 

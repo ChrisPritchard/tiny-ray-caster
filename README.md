@@ -29,15 +29,9 @@ Things I learned building this include:
   - Note: when I move to SDL, I removed the ppm code. Its in the history around [this commit](https://github.com/ChrisPritchard/tiny-ray-caster/blob/3edaf4ae00c5643363a00b4ed7ca1d6f5f526226/Program.fs#L76) if you want to see it.
 - basic raycasting for wolfenstein 3D-esque rendering
   - the 'fish-eye' issue when rendering is something I learned more about (specifically how to solve it) from **[The Black Book](http://fabiensanglard.net/gebbwolf3d/)** by Fabien Sanglard. I recommend it.
+  - I didn't include the monsters from Dmitry's demo - I was more interested in ray casting and SDL interop, to be honest. Maybe something to do in future.
 - SDL2 Interop and Interop and general
   - My implementation is a combination of replicating what Dmitry did, with a conversion of the interop declarations by Flibit
   - I restricted to just what I need, so the SDL interop module is quite small. Where appropriate, I would declare flag-like constants as their raw value, generally derived by running SDL2-CS as a console app to get the value and then putting it here (e.g. SDL_PIXELFORMAT_ABGR8888 as 376840196u)
   - Event polling was complicated, and I ended up restricting to just the event I needed. The union hack in the SDL2-CS lib I couldn't get working with F# (ironic, since F# actually has unions)
   - Other reasons for not using SDL2-CS (i.e. other than the educational challenge) is that I only need a small subset of SDL2's signature, and SDL2-CS is not net standard (its Net Framework 4, as opposed to this project which is Net Core 2.2).
-
-## Improvements
-
-Things that could be done to improve this are:
-
-- I didn't include the monsters from Dmitry's demo - I was more interested in ray casting and SDL interop, to be honest. Maybe something to do in future.
-- Performance - while almost playable on my God-like gaming PC, its certainly far, far, FAR removed from the smoothness of, say, Wolfenstein 3D.

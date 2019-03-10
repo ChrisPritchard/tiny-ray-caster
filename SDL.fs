@@ -52,6 +52,9 @@ extern int SDL_Init(uint32 flags)
 extern int SDL_CreateWindowAndRenderer (int width, int height, SDL_WindowFlags flags, IntPtr& window, IntPtr& renderer)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
+extern uint32 SDL_GetTicks();
+
+[<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern int SDL_PollEvent(SDL_KeyboardEvent& _event)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
