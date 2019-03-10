@@ -107,7 +107,7 @@ let main _ =
 
     let rec drawLoop px py pa =
         frameBuffer
-        |> (fun fb -> drawRect 0 0 arrayw arrayh white fb; fb)
+        |> (fun fb -> Array.fill fb 0 fb.Length 255uy; fb)
         |> drawMap
         |> drawPlayer px py
         |> drawView px py pa
