@@ -27,15 +27,14 @@ let map =
 let arrayw, arrayh = 1024, 512
 let mapw, maph = map.GetLength(0), map.GetLength(1)
 let tilew, tileh = 32, 32
+let fov = Math.PI/3.
 
-let asUint32 (r, g, b) = BitConverter.ToUInt32 (ReadOnlySpan [|255uy; r; g; b|])
+let asUint32 (r, g, b) = BitConverter.ToUInt32 (ReadOnlySpan [|b; g; r; 255uy|])
 
 let white = asUint32 (255uy, 255uy, 255uy)
+let ceilingColour = asUint32 (200uy, 200uy, 200uy)
+let floorColour = asUint32 (150uy, 150uy, 150uy)
 let black = asUint32 (0uy, 0uy, 0uy)
-let random = Random 0
-let randomByte () = random.Next (0, 255) |> byte
-let walls = [|0..3|] |> Array.map (fun _ -> asUint32 (randomByte (), randomByte (), randomByte ()))
-let fov = Math.PI/3.
 
 let wallRows () =
     let image = Image.FromFile "walltext.png" :?> Bitmap
@@ -48,16 +47,15 @@ let drawRect x y w h v array =
         let pos = (dy * arrayw) + x
         Array.fill array pos w v
 
-let drawMap array =
+let drawMap wallRows array =
+    drawRect 0 0 (arrayw/2) arrayh white array
     for y = 0 to maph - 1 do
         for x = 0 to mapw - 1 do
             if map.[x, y] <> ' ' then
                 let wallType = int map.[x, y] - int '0'
-                drawRect (x * tilew) (y * tileh) tilew tileh walls.[wallType] array
-
-let drawPlayer px py array =
-    drawRect (int (px * float tilew)) (int (py * float tileh)) 5 5 white array
-
+                let wallColour = Array.get wallRows (wallType*64) |> Array.head
+                drawRect (x * tilew) (y * tileh) tilew tileh wallColour array
+                
 let fraction (f: float) = abs (f - truncate f)
 
 let drawRay px py pa array =
@@ -80,6 +78,8 @@ let drawRay px py pa array =
                 None)
 
 let drawView px py pa wallRows array =
+    drawRect (arrayw/2) 0 (arrayw/2) (arrayh/2) ceilingColour array
+    drawRect (arrayw/2) (arrayh/2) (arrayw/2) (arrayh/2) floorColour array
     let da = fov / (float arrayw/2.)
     [0..(arrayw/2)-1] |> List.iter (fun i ->
         let angle = pa-(fov/2.) + (da*float i)
@@ -107,15 +107,13 @@ let main _ =
     SDL_CreateWindowAndRenderer(arrayw, arrayh, windowFlags, &window, &renderer) |> ignore
     let texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
 
-    let frameBuffer = Array.create (arrayw * arrayh) white
+    let frameBuffer = Array.create (arrayw * arrayh) black
     let bufferPtr = IntPtr ((Marshal.UnsafeAddrOfPinnedArrayElement (frameBuffer, 0)).ToPointer ())
 
     let wallRows = wallRows ()
 
     let rec drawLoop px py pa =
-        Array.fill frameBuffer 0 frameBuffer.Length white
-        drawMap frameBuffer
-        drawPlayer px py frameBuffer
+        drawMap wallRows frameBuffer
         drawView px py pa wallRows frameBuffer
 
         SDL_UpdateTexture(texture, IntPtr.Zero, bufferPtr, arrayw * 4) |> ignore
