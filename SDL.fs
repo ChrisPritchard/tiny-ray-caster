@@ -16,37 +16,6 @@ type SDL_WindowFlags =
 
 let SDL_TEXTUREACCESS_STREAMING = 1
 let SDL_PIXELFORMAT_ABGR8888 = 376840196u // derived by turning SDL2-CS into a console app and finding out the exact value for this.
-
-type SDL_EventType =
-| SDL_QUIT = 0x100
-| SDL_KEYDOWN = 0x300
-| SDL_KEYUP = 769
-
-[<type:StructLayout(LayoutKind.Sequential)>]
-type SDL_Keysym = {
-    scancode: SDL_Scancode
-    sym: SDL_Keycode
-    ``mod``: SDL_Keymod
-    unicode: uint32
-} 
-and SDL_Scancode = 
-| SDL_SCANCODE_ESCAPE = 41
-and SDL_Keycode =
-| SDLK_ESCAPE = 27
-and SDL_Keymod =
-| KMOD_NONE = 0x0000
-
-[<type:StructLayout(LayoutKind.Sequential)>]
-type SDL_KeyboardEvent = {
-    ``type``: SDL_EventType
-    timestamp: uint32
-    windowID: uint32
-    state: byte
-    repeat: byte
-    padding2: byte
-    padding3: byte
-    keysym: SDL_Keysym
-} 
     
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern int SDL_Init(uint32 flags)
@@ -68,9 +37,6 @@ extern int SDL_RenderCopy(IntPtr renderer, IntPtr texture, IntPtr srcrect, IntPt
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern unit SDL_RenderPresent(IntPtr renderer);
-
-[<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern int SDL_PollEvent(SDL_KeyboardEvent& _event)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern unit SDL_DestroyTexture(IntPtr texture);

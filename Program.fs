@@ -99,11 +99,6 @@ let main _ =
         drawPlayer px py frameBuffer
         drawView px py pa frameBuffer
 
-        //let mutable evt = Unchecked.defaultof<SDL_KeyboardEvent>
-        //if SDL_PollEvent(&evt) <> 0 then
-        //    ()
-            //evt.``type`` |> ignore
-
         SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore
         SDL_RenderCopy(renderer, texture, IntPtr.Zero, IntPtr.Zero) |> ignore
