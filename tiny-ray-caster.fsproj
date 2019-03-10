@@ -3,7 +3,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <RootNamespace>tiny_ray_caster</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
