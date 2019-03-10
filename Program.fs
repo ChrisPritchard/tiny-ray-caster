@@ -6,7 +6,7 @@ open System.Runtime.InteropServices
 open System.Drawing
 
 let map = File.ReadAllLines "map.txt" |> array2D
-let isOpen (x: float) (y: float) = map.[int x, int y] = ' '
+let isOpen ((x: float), (y: float)) = map.[int x, int y] = ' '
 
 let viewWidth, viewHeight = 1024, 512
 let mapw, maph = map.GetLength(0), map.GetLength(1)
@@ -36,7 +36,7 @@ let drawMap wallRows array =
     drawRect 0 0 (viewWidth/2) viewHeight white array
     for y = 0 to maph - 1 do
         for x = 0 to mapw - 1 do
-            if not (isOpen (float x) (float y)) then
+            if not (isOpen (float x, float y)) then
                 let wallType = int map.[x, y] - int '0'
                 let wallColour = Array.get wallRows (wallType*64) |> Array.head
                 drawRect (x * tilew) (y * tileh) tilew tileh wallColour array
@@ -46,17 +46,23 @@ let fraction (f: float) = abs (f - truncate f)
 let drawRay px py pa array =
     let cpa = cos pa
     let spa = sin pa
-    (None, [0.0..0.01..20.0])
+    let point c = px + c * cpa, py + c * spa
+    (None, [0.0..0.1..20.0])
     ||> List.fold (fun stopPoint c ->
         match stopPoint with
         | Some _ -> stopPoint
         | None ->
-            let cx =  px + c * cpa
-            let cy = py + c * spa
-            if not (isOpen cx cy) then 
+            let cx, cy = point c
+            if not (isOpen (cx, cy)) then 
+                let wallType = int map.[int cx, int cy] - int '0'
+                // The trick here is to be more granular once we have confirmed a hit, finding the exact point.
+                // Doing this from the start (changing 0.1 above to 0.01) causes a dramatic performance drop.
+                let c = [(c)..(-0.01)..c-1.] |> List.find (fun dc -> point dc |> isOpen)
+                let cx, cy =  point c
+                // The next two lines work out whether we have intersected on the x or y plane, to find the right point in the wall.
                 let fcx, fcy = fraction cx, fraction cy
                 let ratio = if fcx > 0.01 && fcx < 0.99 then fcx else fcy
-                Some (c, int map.[int cx, int cy] - int '0', ratio)
+                Some (c, wallType, ratio)
             else
                 let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
                 Array.set array (pixely * viewWidth + pixelx) black
@@ -132,7 +138,7 @@ let main _ =
                 let dx, dy = 
                     px + (cos pa * walkSpeed * walk),
                     py + (sin pa * walkSpeed * walk)
-                if isOpen dx dy then dx, dy else px, py
+                if isOpen (dx, dy) then dx, dy else px, py
             drawLoop px py pa    
 
     let px, py, pa = 3.456, 2.345, 0.

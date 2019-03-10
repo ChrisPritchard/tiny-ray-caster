@@ -30,6 +30,7 @@ Things I learned building this include:
 - basic raycasting for wolfenstein 3D-esque rendering
   - the 'fish-eye' issue when rendering is something I learned more about (specifically how to solve it) from **[The Black Book](http://fabiensanglard.net/gebbwolf3d/)** by Fabien Sanglard. I recommend it.
   - I didn't include the monsters from Dmitry's demo - I was more interested in ray casting and SDL interop, to be honest. Maybe something to do in future.
+  - As a performance improvement, the raycasting uses a more granular jump rate, then walks back to find the exact point once it finds a hit.
 - SDL2 Interop and Interop and general
   - My implementation is a combination of replicating what Dmitry did, with a conversion of the interop declarations by Flibit
   - I restricted to just what I need, so the SDL interop module is quite small. Where appropriate, I would declare flag-like constants as their raw value, generally derived by running SDL2-CS as a console app to get the value and then putting it here (e.g. SDL_PIXELFORMAT_ABGR8888 as 376840196u)
