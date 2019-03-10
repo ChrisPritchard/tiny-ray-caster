@@ -18,18 +18,17 @@ let SDL_TEXTUREACCESS_STREAMING = 1
 let SDL_PIXELFORMAT_ARGB8888 = 372645892u
 
 let SDL_KEYDOWN = 0x300u
+let SDLK_ESCAPE = 27u
 
 [<type:StructLayout(LayoutKind.Sequential)>]
 type SDL_Keysym = {
     scancode: SDL_Scancode
-    sym: SDL_Keycode
+    sym: uint32
     ``mod``: SDL_Keymod
     unicode: uint32
 } 
 and SDL_Scancode = 
 | SDL_SCANCODE_ESCAPE = 41
-and SDL_Keycode =
-| SDLK_ESCAPE = 27
 and SDL_Keymod =
 | KMOD_NONE = 0x0000
 

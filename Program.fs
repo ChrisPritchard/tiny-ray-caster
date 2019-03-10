@@ -117,15 +117,17 @@ let main _ =
         drawMap wallRows frameBuffer
         drawView px py pa wallRows frameBuffer
 
-        if SDL_PollEvent(&keyEvent) <> 0 && keyEvent.``type`` = SDL_KEYDOWN then
-            ()
-
         SDL_UpdateTexture(texture, IntPtr.Zero, bufferPtr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore
         SDL_RenderCopy(renderer, texture, IntPtr.Zero, IntPtr.Zero) |> ignore
         SDL_RenderPresent(renderer) |> ignore
 
-        drawLoop px py (pa + (Math.PI/360.))
+        if SDL_PollEvent(&keyEvent) = 0 || keyEvent.``type`` <> SDL_KEYDOWN then
+            drawLoop px py pa
+        else if keyEvent.keysym.sym = SDLK_ESCAPE then 
+            () // quit the game by executing the loop
+        else
+            drawLoop px py pa    
 
     let px, py, pa = 3.456, 2.345, 0.
     drawLoop px py pa
