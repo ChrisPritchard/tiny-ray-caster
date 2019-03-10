@@ -55,7 +55,7 @@ let drawPlayer px py array =
 let drawRay px py pa array =
     let cpa = cos pa
     let spa = sin pa
-    (None, [0.0..0.05..19.0])
+    (None, [0.0..0.01..20.0])
     ||> List.fold (fun stopPoint c ->
         match stopPoint with
         | Some _ -> stopPoint
@@ -103,7 +103,7 @@ let main _ =
 
         drawLoop px py (pa + (Math.PI/360.))
 
-    let px, py, pa = 3.456, 2.345, 15.
+    let px, py, pa = 3.456, 2.345, 0.
     drawLoop px py pa
 
     SDL_DestroyTexture(texture)
