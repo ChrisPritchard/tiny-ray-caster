@@ -82,8 +82,11 @@ let drawView px py pa array =
 [<EntryPoint>]
 let main _ =
 
+    SDL_Init(SDL_INIT_VIDEO) |> ignore
+
     let mutable window, renderer = IntPtr.Zero, IntPtr.Zero
-    SDL_CreateWindowAndRenderer(arrayw, arrayh, SDL_WindowFlags.SDL_WINDOW_SHOWN, &window, &renderer) |> ignore
+    let windowFlags = SDL_WindowFlags.SDL_WINDOW_SHOWN ||| SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS
+    SDL_CreateWindowAndRenderer(arrayw, arrayh, windowFlags, &window, &renderer) |> ignore
     let mutable texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
 
     let frameBuffer = Array.create (arrayw * arrayh) white
@@ -95,6 +98,11 @@ let main _ =
         drawMap frameBuffer
         drawPlayer px py frameBuffer
         drawView px py pa frameBuffer
+
+        //let mutable evt = Unchecked.defaultof<SDL_KeyboardEvent>
+        //if SDL_PollEvent(&evt) <> 0 then
+        //    ()
+            //evt.``type`` |> ignore
 
         SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore
