@@ -11,15 +11,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="map.txt">
+    <None Include="map.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="walltext.png">
+    </None>
+    <None Include="walltext.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
     <None Include="SDL2.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="screencast.gif" />
     <None Include=".gitignore" />
     <None Include="LICENSE" />
     <None Include="README.md" />
