@@ -20,8 +20,5 @@ Cool things I learned:
 - SDL2 Interop and Interop and general
   - My implementation is a combination of replicating what Dmitry did, with a conversion of the interop declarations by Flibit
   - I restricted to just what I need, so the SDL interop module is quite small. Where appropriate, I would declare flag-like constants as their raw value, generally derived by running SDL2-CS as a console app to get the value and then putting it here (e.g. SDL_PIXELFORMAT_ABGR8888 as 376840196u)
+  - Event polling was complicated, and I ended up restricting to just the event I needed. The union hack in the SDL2-CS lib I couldn't get working with F# (ironic, since F# actually has unions)
   - Other reasons for not using SDL2-CS (i.e. other than the educational challenge) is that I only need a small subset of SDL2's signature, and SDL2-CS is not net standard (its Net Framework 4, as opposed to this project which is Net Core 2.2).
-
-Notes:
-
-  - The source solution used SDL_PollEvent to get keyboard events. Unfortunately, whenever I tried this I would get ExecutionEngineExceptions (something which MSDN helpfully informs me is impossible). I suspect there is something in net core that prevents poll events working...but I don't know enough to be sure.

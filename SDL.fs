@@ -6,7 +6,7 @@ open System.Runtime.InteropServices
 open System
 
 [<Literal>]
-let libName = "SDL2.dll"
+let libName = "SDL2"
 
 let SDL_INIT_VIDEO = 0x00000020u
 
@@ -16,12 +16,44 @@ type SDL_WindowFlags =
 
 let SDL_TEXTUREACCESS_STREAMING = 1
 let SDL_PIXELFORMAT_ARGB8888 = 372645892u
+
+let SDL_KEYDOWN = 0x300u
+
+[<type:StructLayout(LayoutKind.Sequential)>]
+type SDL_Keysym = {
+    scancode: SDL_Scancode
+    sym: SDL_Keycode
+    ``mod``: SDL_Keymod
+    unicode: uint32
+} 
+and SDL_Scancode = 
+| SDL_SCANCODE_ESCAPE = 41
+and SDL_Keycode =
+| SDLK_ESCAPE = 27
+and SDL_Keymod =
+| KMOD_NONE = 0x0000
+
+[<type:StructLayout(LayoutKind.Sequential)>]
+type SDL_KeyboardEvent =
+    struct
+        val ``type``: uint32
+        val timestamp: uint32
+        val windowID: uint32
+        val state: byte
+        val repeat: byte
+        val private padding2: byte
+        val private padding3: byte
+        val keysym: SDL_Keysym
+    end
     
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern int SDL_Init(uint32 flags)
     
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern int SDL_CreateWindowAndRenderer (int width, int height, SDL_WindowFlags flags, IntPtr& window, IntPtr& renderer)
+
+[<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
+extern int SDL_PollEvent(SDL_KeyboardEvent& _event)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern IntPtr SDL_CreateTexture (IntPtr renderer, uint32 format, int access, int width, int height)

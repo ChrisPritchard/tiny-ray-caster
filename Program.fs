@@ -109,12 +109,16 @@ let main _ =
 
     let frameBuffer = Array.create (arrayw * arrayh) black
     let bufferPtr = IntPtr ((Marshal.UnsafeAddrOfPinnedArrayElement (frameBuffer, 0)).ToPointer ())
+    let mutable keyEvent = Unchecked.defaultof<SDL_KeyboardEvent>
 
     let wallRows = wallRows ()
 
     let rec drawLoop px py pa =
         drawMap wallRows frameBuffer
         drawView px py pa wallRows frameBuffer
+
+        if SDL_PollEvent(&keyEvent) <> 0 && keyEvent.``type`` = SDL_KEYDOWN then
+            ()
 
         SDL_UpdateTexture(texture, IntPtr.Zero, bufferPtr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore
