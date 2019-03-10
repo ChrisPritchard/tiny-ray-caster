@@ -35,10 +35,11 @@ let randomByte () = random.Next (0, 255) |> byte
 let walls = [|0..3|] |> Array.map (fun _ -> (255uy, randomByte (), randomByte (), randomByte ()))
 let fov = Math.PI/3.
 
-let drawRect x y w h v array =
-    for dx = x to x + w - 1 do
-        for dy = y to y + h - 1 do
-            Array2D.set array dx dy v
+let drawRect x y w h (a, b, g, r) array =
+    for dy = y to y + h - 1 do
+        for dx = x to x + w - 1 do
+            let pos = ((dy * arrayw) + dx) * 4
+            [a;b;g;r] |> List.iteri (fun i v -> Array.set array (pos + i) v)
 
 let drawMap array =
     for y = 0 to maph - 1 do
@@ -65,7 +66,7 @@ let drawRay px py pa array =
             if map.[int cx, int cy] <> ' ' then Some (c, int map.[int cx, int cy] - int '0')
             else
                 let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
-                Array2D.set array pixelx pixely black
+                drawRect pixelx pixely 1 1 black array
                 None)
 
 let drawView px py pa array =
@@ -98,7 +99,6 @@ let main _ =
 
     let mutable window, renderer = IntPtr.Zero, IntPtr.Zero
     SDL_CreateWindowAndRenderer(arrayw, arrayh, SDL_WindowFlags.SDL_WINDOW_SHOWN, &window, &renderer) |> ignore
-    SDL_SetRenderDrawColor(renderer, 255uy, 0uy, 255uy, 255uy) |> ignore
     let mutable texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
 
     let frameBuffer = Array.create (arrayw * arrayh * 4) 255uy
@@ -106,21 +106,12 @@ let main _ =
     let ptr = IntPtr (pos.ToPointer ())
 
     let rec drawLoop px py pa =
-        let map = Array2D.create arrayw arrayh white
-        map
+        frameBuffer
+        |> (fun fb -> drawRect 0 0 arrayw arrayh white fb; fb)
         |> drawMap
         |> drawPlayer px py
         |> drawView px py pa
         |> ignore
-
-        for y = 0 to arrayh - 1 do
-            for x = 0 to arrayw - 1 do
-                let pos = ((y * arrayw) + x) * 4
-                let (a, g, b, r) = map.[x, y]
-                frameBuffer.[pos] <- a
-                frameBuffer.[pos+1] <- b
-                frameBuffer.[pos+2] <- g
-                frameBuffer.[pos+3] <- r
 
         SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore

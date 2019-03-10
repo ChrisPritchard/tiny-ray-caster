@@ -24,9 +24,6 @@ extern IntPtr SDL_CreateTexture (IntPtr renderer, uint32 format, int access, int
 extern int SDL_UpdateTexture(IntPtr texture, IntPtr rect, IntPtr pixels, int pitch);
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern int SDL_SetRenderDrawColor(IntPtr renderer, byte r, byte g, byte b, byte a)
-
-[<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern int SDL_RenderClear(IntPtr renderer);
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
