@@ -36,10 +36,11 @@ let walls = [|0..3|] |> Array.map (fun _ -> (255uy, randomByte (), randomByte ()
 let fov = Math.PI/3.
 
 let drawRect x y w h (a, b, g, r) array =
+    let pixel = [a;b;g;r]
     for dy = y to y + h - 1 do
-        for dx = x to x + w - 1 do
-            let pos = ((dy * arrayw) + dx) * 4
-            [a;b;g;r] |> List.iteri (fun i v -> Array.set array (pos + i) v)
+        let block = Array.init (w * 4) (fun i -> pixel.[i % 4])
+        let pos = ((dy * arrayw) + x) * 4
+        Array.Copy (block, 0, array, pos, block.Length)
 
 let drawMap array =
     for y = 0 to maph - 1 do
@@ -47,11 +48,9 @@ let drawMap array =
             if map.[x, y] <> ' ' then
                 let wallType = int map.[x, y] - int '0'
                 drawRect (x * tilew) (y * tileh) tilew tileh walls.[wallType] array
-    array
 
 let drawPlayer px py array =
     drawRect (int (px * float tilew)) (int (py * float tileh)) 5 5 white array
-    array
 
 let drawRay px py pa array =
     let cpa = cos pa
@@ -79,20 +78,6 @@ let drawView px py pa array =
             let viewPlaneDist = stopPoint * cos (angle - pa) // I understand what this does, and why. But not how (not a math guy :)
             let columnHeight = int (float arrayh / viewPlaneDist)
             drawRect (arrayw / 2 + i) ((arrayh - columnHeight) / 2) 1 columnHeight walls.[wallType] array)
-    array
-
-let saveAsPPM fileName array =
-    if File.Exists fileName then File.Delete fileName
-    use out = File.OpenWrite fileName
-    let width, height = Array2D.length1 array, Array2D.length2 array
-
-    sprintf "P6\n%i %i\n255\n" width height 
-    |> Seq.iter (fun c -> out.WriteByte (byte c))
-
-    for y = 0 to height - 1 do
-        for x = 0 to width - 1 do
-            let (r, g, b, a) = array.[x, y]
-            Seq.iter out.WriteByte [a;b;g;r]
 
 [<EntryPoint>]
 let main _ =
@@ -106,12 +91,10 @@ let main _ =
     let ptr = IntPtr (pos.ToPointer ())
 
     let rec drawLoop px py pa =
-        frameBuffer
-        |> (fun fb -> Array.fill fb 0 fb.Length 255uy; fb)
-        |> drawMap
-        |> drawPlayer px py
-        |> drawView px py pa
-        |> ignore
+        Array.fill frameBuffer 0 frameBuffer.Length 255uy
+        drawMap frameBuffer
+        drawPlayer px py frameBuffer
+        drawView px py pa frameBuffer
 
         SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore
