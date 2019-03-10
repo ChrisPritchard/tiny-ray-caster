@@ -78,9 +78,10 @@ let drawView px py pa wallRows array =
             let x = (viewWidth / 2) + i
             let y = (viewHeight - columnHeight) / 2
             for dy = y to y + columnHeight - 1 do
-                let pos = dy * viewWidth + x
-                let pix = int (wy * (float dy - float y))
-                array.[pos] <- Array.get wallRow pix)
+                if dy >= 0 && dy < viewHeight then
+                    let pos = dy * viewWidth + x
+                    let pix = int (wy * (float dy - float y))
+                    array.[pos] <- Array.get wallRow pix)
             
 [<EntryPoint>]
 let main _ =
@@ -108,7 +109,7 @@ let main _ =
         SDL_RenderPresent(renderer) |> ignore
 
         if SDL_PollEvent(&keyEvent) = 0 || keyEvent.``type`` <> SDL_KEYDOWN then
-            drawLoop px py pa
+            drawLoop px py pa // no keys were pressed, so continue as normal
         else if keyEvent.keysym.sym = SDLK_ESCAPE then 
             () // quit the game by executing the loop
         else
