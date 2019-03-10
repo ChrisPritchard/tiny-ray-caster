@@ -112,13 +112,19 @@ let main _ =
         else if keyEvent.keysym.sym = SDLK_ESCAPE then 
             () // quit the game by executing the loop
         else
-            let pa =
-                if keyEvent.keysym.sym = uint32 'a' then
-                    pa - turnSpeed
-                elif keyEvent.keysym.sym = uint32 'd' then
-                    pa + turnSpeed
-                else
-                    pa
+            let turn, walk = 
+                match keyEvent.keysym.sym with
+                | c when c = uint32 'a' -> -1., 0.
+                | c when c = uint32 'd' -> 1., 0.
+                | c when c = uint32 'w' -> 0., 1.
+                | c when c = uint32 's' -> 0., -1.
+                | _ -> 0., 0.
+            let pa = pa + (turnSpeed * turn)
+            let px, py = 
+                let dx, dy = 
+                    px + (cos pa * walkSpeed * walk),
+                    py + (sin pa * walkSpeed * walk)
+                if isOpen dx dy then dx, dy else px, py
             drawLoop px py pa    
 
     let px, py, pa = 3.456, 2.345, 0.
