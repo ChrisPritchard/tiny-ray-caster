@@ -56,7 +56,7 @@ let drawPlayer px py array =
 let drawRay px py pa array =
     let cpa = cos pa
     let spa = sin pa
-    (None, [0.0..0.1..19.0])
+    (None, [0.0..0.05..19.0])
     ||> List.fold (fun stopPoint c ->
         match stopPoint with
         | Some _ -> stopPoint
