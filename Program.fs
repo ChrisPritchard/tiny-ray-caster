@@ -74,7 +74,7 @@ let drawRay px py pa array =
                 Some (c, int map.[int cx, int cy] - int '0', ratio)
             else
                 let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
-                drawRect pixelx pixely 1 1 black array
+                Array.set array (pixely * arrayw + pixelx) black
                 None)
 
 let drawView px py pa wallRows array =
