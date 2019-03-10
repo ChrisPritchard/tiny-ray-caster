@@ -3,6 +3,7 @@ open System.IO
 open SDL
 open System
 open System.Runtime.InteropServices
+open System.Drawing
 
 let map = 
     [|
@@ -28,7 +29,7 @@ let arrayw, arrayh = 1024, 512
 let mapw, maph = map.GetLength(0), map.GetLength(1)
 let tilew, tileh = 32, 32
 
-let asUint32 (r, g, b) = BitConverter.ToUInt32 (ReadOnlySpan [|255uy; b; g; r|])
+let asUint32 (r, g, b) = BitConverter.ToUInt32 (ReadOnlySpan [|255uy; r; g; b|])
 
 let white = asUint32 (255uy, 255uy, 255uy)
 let black = asUint32 (0uy, 0uy, 0uy)
@@ -79,6 +80,10 @@ let drawView px py pa array =
             let columnHeight = int (float arrayh / viewPlaneDist)
             drawRect (arrayw / 2 + i) ((arrayh - columnHeight) / 2) 1 columnHeight walls.[wallType] array)
 
+let arrayPtr array =
+    let pos = Marshal.UnsafeAddrOfPinnedArrayElement (array, 0)
+    IntPtr (pos.ToPointer ())
+
 [<EntryPoint>]
 let main _ =
 
@@ -87,11 +92,21 @@ let main _ =
     let mutable window, renderer = IntPtr.Zero, IntPtr.Zero
     let windowFlags = SDL_WindowFlags.SDL_WINDOW_SHOWN ||| SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS
     SDL_CreateWindowAndRenderer(arrayw, arrayh, windowFlags, &window, &renderer) |> ignore
-    let mutable texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
+    let texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, arrayw, arrayh)
+
+    let image = Image.FromFile "walltext.png" :?> Bitmap
+    let bytes = 
+        [|0..(image.Height * image.Width)-1|] 
+        |> Array.map (fun i -> 
+            let y = i / image.Width
+            let x = i % image.Width
+            uint32 (image.GetPixel(x, y).ToArgb()))
+    let ptr = arrayPtr bytes
+    let walltexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, image.Width, image.Height)
+    SDL_UpdateTexture(walltexture, IntPtr.Zero, ptr, image.Width * 4) |> ignore
 
     let frameBuffer = Array.create (arrayw * arrayh) white
-    let pos = Marshal.UnsafeAddrOfPinnedArrayElement (frameBuffer, 0)
-    let ptr = IntPtr (pos.ToPointer ())
+    let bufferPtr = arrayPtr frameBuffer
 
     let rec drawLoop px py pa =
         Array.fill frameBuffer 0 frameBuffer.Length white
@@ -99,9 +114,10 @@ let main _ =
         drawPlayer px py frameBuffer
         drawView px py pa frameBuffer
 
-        SDL_UpdateTexture(texture, IntPtr.Zero, ptr, arrayw * 4) |> ignore
+        SDL_UpdateTexture(texture, IntPtr.Zero, bufferPtr, arrayw * 4) |> ignore
         SDL_RenderClear(renderer) |> ignore
         SDL_RenderCopy(renderer, texture, IntPtr.Zero, IntPtr.Zero) |> ignore
+        SDL_RenderCopy(renderer, walltexture, IntPtr.Zero, IntPtr.Zero) |> ignore
         SDL_RenderPresent(renderer) |> ignore
 
         drawLoop px py (pa + (Math.PI/360.))

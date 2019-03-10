@@ -15,7 +15,7 @@ type SDL_WindowFlags =
 | SDL_WINDOW_INPUT_FOCUS = 0x00000200
 
 let SDL_TEXTUREACCESS_STREAMING = 1
-let SDL_PIXELFORMAT_ABGR8888 = 376840196u // derived by turning SDL2-CS into a console app and finding out the exact value for this.
+let SDL_PIXELFORMAT_ARGB8888 = 372645892u
     
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern int SDL_Init(uint32 flags)
