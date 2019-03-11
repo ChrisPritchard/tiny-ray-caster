@@ -12,7 +12,7 @@ let viewWidth, viewHeight = 1024, 512
 let mapw, maph = map.GetLength(0), map.GetLength(1)
 let tilew, tileh = viewWidth/2/mapw, viewHeight/maph
 let fov = Math.PI/3.
-let turnSpeed, walkSpeed = 0.1, 0.1
+let turnSpeed, walkSpeed = 0.01, 0.02
 
 let asUint32 (r, g, b) = BitConverter.ToUInt32 (ReadOnlySpan [|b; g; r; 255uy|])
 
@@ -57,7 +57,7 @@ let drawRay px py pa array =
                 let wallType = int map.[int cx, int cy] - int '0'
                 // The trick here is to be more granular once we have confirmed a hit, finding the exact point.
                 // Doing this from the start (changing 0.1 above to 0.01) causes a dramatic performance drop.
-                let c = [(c)..(-0.01)..c-1.] |> List.find (fun dc -> point dc |> isOpen)
+                let c = [(c)..(-0.005)..c-1.] |> List.find (fun dc -> point dc |> isOpen)
                 let cx, cy =  point c
                 // The next two lines work out whether we have intersected on the x or y plane, to find the right point in the wall.
                 let fcx, fcy = fraction cx, fraction cy
@@ -89,6 +89,13 @@ let drawView px py pa wallRows array =
                     let pix = int (wy * (float dy - float y))
                     array.[pos] <- Array.get wallRow pix)
             
+type Pressed = {
+    left: bool; right: bool; forward: bool; backward: bool
+} with 
+    member __.toTurnWalk () = 
+        (if __.left && not __.right then -1. elif __.right && not __.left then 1. else 0.),
+        (if __.forward && not __.backward then 1. elif __.backward && not __.forward then -1. else 0.)
+
 [<EntryPoint>]
 let main _ =
 
@@ -106,7 +113,7 @@ let main _ =
     let wallRows = wallRows ()
     let mutable lastTicks = SDL_GetTicks ()
 
-    let rec drawLoop px py pa =
+    let rec drawLoop px py pa (pressed: Pressed) =
         // this first chunk writes the fps to the console
         let ticks = SDL_GetTicks ()
         let fps = 1000u / (ticks - lastTicks) |> int
@@ -122,28 +129,30 @@ let main _ =
         SDL_RenderCopy(renderer, texture, IntPtr.Zero, IntPtr.Zero) |> ignore
         SDL_RenderPresent(renderer) |> ignore
 
-        if SDL_PollEvent(&keyEvent) = 0 || keyEvent.``type`` <> SDL_KEYDOWN then
-            drawLoop px py pa // no keys were pressed, so continue as normal
+        let turn, walk = pressed.toTurnWalk ()
+        let pa = pa + (turnSpeed * turn)
+        let px, py = 
+            let dx, dy = 
+                px + (cos pa * walkSpeed * walk),
+                py + (sin pa * walkSpeed * walk)
+            if isOpen (dx, dy) then dx, dy else px, py
+
+        if SDL_PollEvent(&keyEvent) = 0 || (keyEvent.``type`` <> SDL_KEYDOWN && keyEvent.``type`` <> SDL_KEYUP) then
+            drawLoop px py pa pressed // no keys were pressed, so continue as normal
         else if keyEvent.keysym.sym = SDLK_ESCAPE then 
             () // quit the game by executing the loop
         else
-            let turn, walk = 
-                match keyEvent.keysym.sym with
-                | c when c = uint32 'a' -> -1., 0.
-                | c when c = uint32 'd' -> 1., 0.
-                | c when c = uint32 'w' -> 0., 1.
-                | c when c = uint32 's' -> 0., -1.
-                | _ -> 0., 0.
-            let pa = pa + (turnSpeed * turn)
-            let px, py = 
-                let dx, dy = 
-                    px + (cos pa * walkSpeed * walk),
-                    py + (sin pa * walkSpeed * walk)
-                if isOpen (dx, dy) then dx, dy else px, py
-            drawLoop px py pa    
+            let pressed = 
+                match keyEvent.``type``, keyEvent.keysym.sym with
+                | e, c when c = uint32 'a' -> { pressed with left = (e = SDL_KEYDOWN) }
+                | e, c when c = uint32 'd' -> { pressed with right = (e = SDL_KEYDOWN) }
+                | e, c when c = uint32 'w' -> { pressed with forward = (e = SDL_KEYDOWN) }
+                | e, c when c = uint32 's' -> { pressed with backward = (e = SDL_KEYDOWN) }
+                | _ -> pressed
+            drawLoop px py pa pressed   
 
     let px, py, pa = 3.456, 2.345, 0.
-    drawLoop px py pa
+    drawLoop px py pa {left=false;right=false;forward=false;backward=false}
 
     SDL_DestroyTexture(texture)
     SDL_DestroyRenderer(renderer)
