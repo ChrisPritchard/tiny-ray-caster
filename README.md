@@ -1,6 +1,6 @@
 # tiny-ray-caster
 
-A tiny ray caster using raw SDL2, written in F#
+A tiny ray caster game rendered using raw SDL2, written in F#:
 
 <img align="center" src="screencast.gif" />
 
