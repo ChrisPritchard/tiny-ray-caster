@@ -6,7 +6,7 @@ open System.Runtime.InteropServices
 open System.Drawing
 
 let map = File.ReadAllLines "map.txt" |> array2D
-let isOpen ((x: float), (y: float)) = map.[int x, int y] = ' '
+let isOpen (x: float, y: float) = map.[int x, int y] = ' '
 
 let viewWidth, viewHeight = 1024, 512
 let mapw, maph = map.GetLength(0), map.GetLength(1)
