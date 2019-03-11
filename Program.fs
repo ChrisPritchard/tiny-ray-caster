@@ -107,10 +107,11 @@ let main _ =
     let mutable lastTicks = SDL_GetTicks ()
 
     let rec drawLoop px py pa =
+        // this first chunk writes the fps to the console
         let ticks = SDL_GetTicks ()
-        let fps = 1000u / (ticks - lastTicks)
+        let fps = 1000u / (ticks - lastTicks) |> int
         Console.CursorLeft <- 0
-        Console.Write (string fps + "      ")
+        printf "FPS: %-5i" fps
         lastTicks <- ticks
 
         drawMap wallRows frameBuffer
