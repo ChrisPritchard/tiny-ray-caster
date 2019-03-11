@@ -34,6 +34,7 @@ let drawRect x y w h v array =
 
 let drawMap wallRows array =
     drawRect 0 0 (viewWidth/2) viewHeight white array
+    
     for y = 0 to maph - 1 do
         for x = 0 to mapw - 1 do
             if not (isOpen (float x, float y)) then
@@ -47,6 +48,7 @@ let drawRay px py pa array =
     let cpa = cos pa
     let spa = sin pa
     let point c = px + c * cpa, py + c * spa
+    
     (None, [0.0..0.1..20.0])
     ||> List.fold (fun stopPoint c ->
         match stopPoint with
@@ -56,7 +58,7 @@ let drawRay px py pa array =
             if not (isOpen (cx, cy)) then 
                 let wallType = int map.[int cx, int cy] - int '0'
                 // The trick here is to be more granular once we have confirmed a hit, finding the exact point.
-                // Doing this from the start (changing 0.1 above to 0.01) causes a dramatic performance drop.
+                // Doing this from the start (changing 0.1 above to 0.005) causes a crippling performance drop.
                 let c = [(c)..(-0.005)..c-1.] |> List.find (fun dc -> point dc |> isOpen)
                 let cx, cy =  point c
                 // The next two lines work out whether we have intersected on the x or y plane, to find the right point in the wall.
@@ -71,6 +73,7 @@ let drawRay px py pa array =
 let drawView px py pa wallRows array =
     drawRect (viewWidth/2) 0 (viewWidth/2) (viewHeight/2) ceilingColour array
     drawRect (viewWidth/2) (viewHeight/2) (viewWidth/2) (viewHeight/2) floorColour array
+    
     let da = fov / (float viewWidth/2.)
     [0..(viewWidth/2)-1] |> List.iter (fun i ->
         let angle = pa-(fov/2.) + (da*float i)
@@ -104,6 +107,7 @@ let main _ =
     let mutable window, renderer = IntPtr.Zero, IntPtr.Zero
     let windowFlags = SDL_WindowFlags.SDL_WINDOW_SHOWN ||| SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS
     SDL_CreateWindowAndRenderer(viewWidth, viewHeight, windowFlags, &window, &renderer) |> ignore
+    
     let texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, viewWidth, viewHeight)
 
     let frameBuffer = Array.create (viewWidth * viewHeight) black
@@ -140,7 +144,7 @@ let main _ =
         if SDL_PollEvent(&keyEvent) = 0 || (keyEvent.``type`` <> SDL_KEYDOWN && keyEvent.``type`` <> SDL_KEYUP) then
             drawLoop px py pa pressed // no keys were pressed, so continue as normal
         else if keyEvent.keysym.sym = SDLK_ESCAPE then 
-            () // quit the game by executing the loop
+            () // quit the game by exiting the loop
         else
             let pressed = 
                 match keyEvent.``type``, keyEvent.keysym.sym with
