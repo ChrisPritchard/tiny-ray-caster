@@ -65,16 +65,16 @@ extern IntPtr SDL_CreateTexture (IntPtr renderer, uint32 format, int access, int
 extern int SDL_UpdateTexture(IntPtr texture, IntPtr rect, IntPtr pixels, int pitch);
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern int SDL_RenderClear(IntPtr renderer);
+extern int SDL_RenderClear(IntPtr renderer)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern int SDL_RenderCopy(IntPtr renderer, IntPtr texture, IntPtr srcrect, IntPtr destrect);
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern unit SDL_RenderPresent(IntPtr renderer);
+extern unit SDL_RenderPresent(IntPtr renderer)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
-extern unit SDL_DestroyTexture(IntPtr texture);
+extern unit SDL_DestroyTexture(IntPtr texture)
 
 [<DllImport(libName, CallingConvention = CallingConvention.Cdecl)>]
 extern unit SDL_DestroyRenderer(IntPtr renderer)
