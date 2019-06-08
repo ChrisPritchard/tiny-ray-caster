@@ -12,6 +12,7 @@ let viewWidth, viewHeight = 1024, 512
 let mapw, maph = map.GetLength(0), map.GetLength(1)
 let tilew, tileh = viewWidth/2/mapw, viewHeight/maph
 let fov = Math.PI/3.
+let drawAngleSlice = fov / (float viewWidth/2.)
 let turnSpeed, walkSpeed = 0.01, 0.02
 
 let asUint32 (r, g, b) = BitConverter.ToUInt32 (ReadOnlySpan [|b; g; r; 255uy|])
@@ -71,13 +72,15 @@ let drawRay px py pa array =
             None)
 
 let drawView px py pa wallRows array =
+    // draw ceiling
     drawRect (viewWidth/2) 0 (viewWidth/2) (viewHeight/2) ceilingColour array
+    // draw floor
     drawRect (viewWidth/2) (viewHeight/2) (viewWidth/2) (viewHeight/2) floorColour array
-    
-    let da = fov / (float viewWidth/2.)
+
+    // for each 'slice' find the insersected wall with its height and draw it
     viewSliceList
     |> List.iter (fun i ->
-        let angle = pa-(fov/2.) + (da*float i)
+        let angle = pa-(fov/2.) + (drawAngleSlice*float i)
         match drawRay px py angle array with
         | None -> ()
         | Some (stopPoint, wallType, wallCol) ->
@@ -87,11 +90,10 @@ let drawView px py pa wallRows array =
             let wy = 64. / float columnHeight
             let x = (viewWidth / 2) + i
             let y = (viewHeight - columnHeight) / 2
-            for dy = y to y + columnHeight - 1 do
-                if dy >= 0 && dy < viewHeight then
-                    let pos = dy * viewWidth + x
-                    let pix = int (wy * (float dy - float y))
-                    array.[pos] <- Array.get wallRow pix)
+            for dy = max 0 y to min (viewHeight - 1) (y + columnHeight - 1) do
+                let pos = dy * viewWidth + x
+                let pix = int (wy * (float dy - float y))
+                array.[pos] <- Array.get wallRow pix)
             
 type Pressed = {
     left: bool; right: bool; forward: bool; backward: bool
@@ -119,13 +121,6 @@ let main _ =
     let mutable lastTicks = SDL_GetTicks ()
 
     let rec drawLoop px py pa (pressed: Pressed) =
-        // this first chunk writes the fps to the console
-        let ticks = SDL_GetTicks ()
-        let fps = 1000u / (ticks - lastTicks) |> int
-        Console.CursorLeft <- 0
-        printf "FPS: %-5i" fps
-        lastTicks <- ticks
-
         drawMap wallRows frameBuffer
         drawView px py pa wallRows frameBuffer
 
