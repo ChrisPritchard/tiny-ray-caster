@@ -21,6 +21,9 @@ let ceilingColour = asUint32 (200uy, 200uy, 200uy)
 let floorColour = asUint32 (150uy, 150uy, 150uy)
 let black = asUint32 (0uy, 0uy, 0uy)
 
+let rayList = [0.0..0.1..20.0]
+let viewSliceList = [0..(viewWidth/2)-1] 
+
 let wallRows () =
     let image = Image.FromFile "walltext.png" :?> Bitmap
     [|0..image.Width-1|] 
@@ -49,33 +52,31 @@ let drawRay px py pa array =
     let spa = sin pa
     let point c = px + c * cpa, py + c * spa
     
-    (None, [0.0..0.1..20.0])
-    ||> List.fold (fun stopPoint c ->
-        match stopPoint with
-        | Some _ -> stopPoint
-        | None ->
-            let cx, cy = point c
-            if not (isOpen (cx, cy)) then 
-                let wallType = int map.[int cx, int cy] - int '0'
-                // The trick here is to be more granular once we have confirmed a hit, finding the exact point.
-                // Doing this from the start (changing 0.1 above to 0.005) causes a crippling performance drop.
-                let c = [(c)..(-0.005)..c-1.] |> List.find (fun dc -> point dc |> isOpen)
-                let cx, cy =  point c
-                // The next two lines work out whether we have intersected on the x or y plane, to find the right point in the wall.
-                let fcx, fcy = fraction cx, fraction cy
-                let ratio = if fcx > 0.01 && fcx < 0.99 then fcx else fcy
-                Some (c, wallType, ratio)
-            else
-                let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
-                Array.set array (pixely * viewWidth + pixelx) black
-                None)
+    rayList
+    |> List.tryPick (fun c ->
+        let cx, cy = point c
+        if not (isOpen (cx, cy)) then 
+            let wallType = int map.[int cx, int cy] - int '0'
+            // The trick here is to be more granular once we have confirmed a hit, finding the exact point.
+            // Doing this from the start (changing 0.1 above to 0.005) causes a crippling performance drop.
+            let c = [(c)..(-0.005)..c-1.] |> List.find (fun dc -> point dc |> isOpen)
+            let cx, cy =  point c
+            // The next two lines work out whether we have intersected on the x or y plane, to find the right point in the wall.
+            let fcx, fcy = fraction cx, fraction cy
+            let ratio = if fcx > 0.01 && fcx < 0.99 then fcx else fcy
+            Some (c, wallType, ratio)
+        else
+            let pixelx, pixely = int (cx * float tilew), int (cy * float tileh)
+            Array.set array (pixely * viewWidth + pixelx) black
+            None)
 
 let drawView px py pa wallRows array =
     drawRect (viewWidth/2) 0 (viewWidth/2) (viewHeight/2) ceilingColour array
     drawRect (viewWidth/2) (viewHeight/2) (viewWidth/2) (viewHeight/2) floorColour array
     
     let da = fov / (float viewWidth/2.)
-    [0..(viewWidth/2)-1] |> List.iter (fun i ->
+    viewSliceList
+    |> List.iter (fun i ->
         let angle = pa-(fov/2.) + (da*float i)
         match drawRay px py angle array with
         | None -> ()
